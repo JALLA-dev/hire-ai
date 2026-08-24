@@ -4,8 +4,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pathwise — AI Job Assistant",
-  description: "Discover opportunities, improve your resume, and manage your career journey with Pathwise AI.",
+  title: "Hire AI — AI Job Assistant",
+  description: "Discover opportunities, improve your resume, and manage your career journey with Hire AI.",
 };
 
 function AuthProvider({ children }: { children: ReactNode }) {

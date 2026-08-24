@@ -210,7 +210,7 @@ export function PortalConnections({ notify }: { notify: (message: string) => voi
         </section>
 
         <aside className="integration-aside">
-          <section className="security-card"><div className="security-shield"><ShieldCheck size={22} /></div><h3>Your data stays yours</h3><p>Pathwise requests the minimum access needed. Credentials remain with each portal, permissions are revocable, and every sync is logged.</p><ul><li><Check size={13} />Scoped portal permissions</li><li><Check size={13} />Encrypted transport</li><li><Check size={13} />Transparent activity log</li></ul><button onClick={() => notify("Security center opened")}>View security center <ChevronRight size={13} /></button></section>
+          <section className="security-card"><div className="security-shield"><ShieldCheck size={22} /></div><h3>Your data stays yours</h3><p>Hire AI requests the minimum access needed. Credentials remain with each portal, permissions are revocable, and every sync is logged.</p><ul><li><Check size={13} />Scoped portal permissions</li><li><Check size={13} />Encrypted transport</li><li><Check size={13} />Transparent activity log</li></ul><button onClick={() => notify("Security center opened")}>View security center <ChevronRight size={13} /></button></section>
           <section className="sync-flow-card"><span>HOW SYNC WORKS</span><h3>One search. Every source.</h3><div className="sync-flow"><div><Search size={15} /><b>You search</b></div><i /><div><Sparkles size={15} /><b>AI ranks</b></div><i /><div><BellRing size={15} /><b>You&apos;re alerted</b></div></div><p>Results are deduplicated and ranked using your skills, preferences, and resume fit.</p></section>
         </aside>
       </div>
@@ -275,7 +275,7 @@ export function PortalConnections({ notify }: { notify: (message: string) => voi
         </div>
       ) : null}
 
-      {permissionPortal ? <div className="permission-modal-layer"><button aria-label="Close permissions" onClick={() => setPermissionPortal(null)} /><section><div className="permission-icon" style={{ background: permissionPortal.color }}>{permissionPortal.letter}</div><h2>{permissionPortal.name} permissions</h2><p>{permissionPortal.connected ? "Pathwise currently uses these approved scopes." : "These permissions will be requested when you connect."}</p><ul>{permissionPortal.capabilities.map((item) => <li key={item}><Check size={14} />{item}<span>Allowed</span></li>)}</ul><div className="permission-note"><LockKeyhole size={14} />Pathwise never asks for your portal password.</div><button onClick={() => setPermissionPortal(null)}>Done</button></section></div> : null}
+      {permissionPortal ? <div className="permission-modal-layer"><button aria-label="Close permissions" onClick={() => setPermissionPortal(null)} /><section><div className="permission-icon" style={{ background: permissionPortal.color }}>{permissionPortal.letter}</div><h2>{permissionPortal.name} permissions</h2><p>{permissionPortal.connected ? "Hire AI currently uses these approved scopes." : "These permissions will be requested when you connect."}</p><ul>{permissionPortal.capabilities.map((item) => <li key={item}><Check size={14} />{item}<span>Allowed</span></li>)}</ul><div className="permission-note"><LockKeyhole size={14} />Hire AI never asks for your portal password.</div><button onClick={() => setPermissionPortal(null)}>Done</button></section></div> : null}
     </div>
   );
 }

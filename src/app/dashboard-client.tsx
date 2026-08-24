@@ -175,7 +175,7 @@ export default function DashboardClient() {
   const [localUser, setLocalUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("pathwise_local_user");
+    const saved = localStorage.getItem("hireai_local_user");
     if (saved) {
       try { setLocalUser(JSON.parse(saved)); } catch {}
     }
@@ -212,7 +212,7 @@ export default function DashboardClient() {
     const nameToUse = authName.trim() || authEmail.split("@")[0] || "User";
     const newUser = { name: nameToUse, email: authEmail.trim() || "user@example.com" };
     setLocalUser(newUser);
-    localStorage.setItem("pathwise_local_user", JSON.stringify(newUser));
+    localStorage.setItem("hireai_local_user", JSON.stringify(newUser));
     setShowAuthModal(false);
     setAuthName("");
     setAuthEmail("");
@@ -222,7 +222,7 @@ export default function DashboardClient() {
 
   function handleSignOut() {
     setLocalUser(null);
-    localStorage.removeItem("pathwise_local_user");
+    localStorage.removeItem("hireai_local_user");
     setShowProfile(false);
     notify("Signed out successfully.");
   }
@@ -241,7 +241,7 @@ export default function DashboardClient() {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("pathwise-theme");
+    const savedTheme = window.localStorage.getItem("hireai-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const shouldUseDark = savedTheme ? savedTheme === "dark" : prefersDark;
     setDarkMode(shouldUseDark);
@@ -252,7 +252,7 @@ export default function DashboardClient() {
     setDarkMode((current) => {
       const next = !current;
       document.documentElement.dataset.theme = next ? "dark" : "light";
-      window.localStorage.setItem("pathwise-theme", next ? "dark" : "light");
+      window.localStorage.setItem("hireai-theme", next ? "dark" : "light");
       return next;
     });
   }
@@ -294,7 +294,7 @@ export default function DashboardClient() {
       <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
         <div className="brand-row">
           <div className="brand-mark"><Sparkles size={19} fill="currentColor" /></div>
-          <span>Pathwise</span>
+          <span>Hire AI</span>
           <button className="sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close sidebar"><X size={20} /></button>
         </div>
 
@@ -311,7 +311,7 @@ export default function DashboardClient() {
         ) : (
           <div className="profile-mini" style={{ padding: "0.5rem" }}>
             <button className="premium-action" style={{ width: "100%", justifyContent: "center" }} onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}>
-              Sign in to Pathwise
+              Sign in to Hire AI
             </button>
           </div>
         )}
@@ -335,8 +335,8 @@ export default function DashboardClient() {
       <main className="main-panel">
         <header className="topbar">
           <button className="menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open menu"><Menu size={21} /></button>
-          <div className="mobile-brand"><div className="brand-mark"><Sparkles size={17} fill="currentColor" /></div>Pathwise</div>
-          <div className="topbar-context"><span>Pathwise</span><ChevronRight size={13} /><b>{activeNav}</b></div>
+          <div className="mobile-brand"><div className="brand-mark"><Sparkles size={17} fill="currentColor" /></div>Hire AI</div>
+          <div className="topbar-context"><span>Hire AI</span><ChevronRight size={13} /><b>{activeNav}</b></div>
           <button className="global-command" onClick={() => { changeNav("Job search"); notify("Global search opened"); }}><Search size={15} /><span>Search jobs, tools, or applications...</span><kbd>⌘ K</kbd></button>
           <div className="topbar-spacer" />
           <div className="topbar-actions">
@@ -394,7 +394,7 @@ export default function DashboardClient() {
               <h1>{greeting}, {firstName} <span>👋</span></h1>
               <p className="welcome-copy">Your next opportunity is closer than you think. Let&apos;s make today count.</p>
             </div>
-            <button className="ask-ai-button" onClick={() => notify("Pathwise AI is ready to help") }><Sparkles size={16} fill="currentColor" /> Ask Pathwise AI</button>
+            <button className="ask-ai-button" onClick={() => notify("Hire AI is ready to help") }><Sparkles size={16} fill="currentColor" /> Ask Hire AI</button>
           </section>
 
           <section className="search-card">
@@ -523,10 +523,10 @@ export default function DashboardClient() {
             <button className="modal-close" onClick={() => setShowAuthModal(false)}><X size={20} /></button>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
               <div className="brand-mark"><Sparkles size={18} fill="currentColor" /></div>
-              <h2 style={{ margin: 0, fontSize: "18px" }}>Pathwise</h2>
+              <h2 style={{ margin: 0, fontSize: "18px" }}>Hire AI</h2>
             </div>
             <p style={{ margin: "0 0 16px 0", color: "#858b97", fontSize: "12px" }}>
-              {authMode === "signup" ? "Create your free Pathwise account to unlock custom job alerts & applications." : "Sign in to access your saved jobs, applications, and resume health."}
+              {authMode === "signup" ? "Create your free Hire AI account to unlock custom job alerts & applications." : "Sign in to access your saved jobs, applications, and resume health."}
             </p>
 
             <div style={{ display: "flex", gap: "6px", background: "#f1f2f5", padding: "4px", borderRadius: "8px", marginBottom: "16px" }}>
