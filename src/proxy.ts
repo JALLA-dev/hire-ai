@@ -1,16 +1,30 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const isClerkConfigured = Boolean(
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
-);
+function noopMiddleware(_req: NextRequest) {
+  return NextResponse.next();
+}
 
-export default isClerkConfigured
-  ? clerkMiddleware()
-  : function noopMiddleware(_req: NextRequest) {
-      return NextResponse.next();
-    };
+let handler: (req: NextRequest) => ReturnType<typeof NextResponse.next>;
+
+try {
+  const isClerkConfigured = Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
+  );
+
+  if (isClerkConfigured) {
+    // Dynamic require to avoid crashing if Clerk keys are missing
+    const { clerkMiddleware } = require("@clerk/nextjs/server");
+    handler = clerkMiddleware();
+  } else {
+    handler = noopMiddleware;
+  }
+} catch {
+  // If Clerk import fails for any reason, fall back to noop
+  handler = noopMiddleware;
+}
+
+export default handler;
 
 export const config = {
   matcher: [

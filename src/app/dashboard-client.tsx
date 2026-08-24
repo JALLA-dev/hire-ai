@@ -38,7 +38,25 @@ import {
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SignInButton, SignUpButton, Show, UserButton, useUser } from "@clerk/nextjs";
+
+
+// Safe Clerk imports – these components are only used conditionally
+let useUserHook: () => { user: any };
+try {
+  const clerk = require("@clerk/nextjs");
+  useUserHook = clerk.useUser;
+} catch {
+  useUserHook = () => ({ user: null });
+}
+
+function useSafeUser() {
+  try {
+    return useUserHook();
+  } catch {
+    return { user: null };
+  }
+}
+
 import { NotificationSettings, PortalConnections, type WorkspaceName } from "./integration-workspaces";
 import { CoreWorkspace } from "./core-workspaces";
 import { getLocationSuggestions, matchesStrictLocation, normalizeLocation } from "@/lib/location-search";
@@ -153,7 +171,7 @@ function getFormattedDate(): string {
 }
 
 export default function DashboardClient() {
-  const { user } = useUser();
+  const { user } = useSafeUser();
   const [localUser, setLocalUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
