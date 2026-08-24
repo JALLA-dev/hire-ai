@@ -154,11 +154,60 @@ function getFormattedDate(): string {
 
 export default function DashboardClient() {
   const { user } = useUser();
-  const firstName = user?.firstName || user?.username || "there";
-  const fullName = user?.fullName || user?.username || "User";
-  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
+  const [localUser, setLocalUser] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("pathwise_local_user");
+    if (saved) {
+      try { setLocalUser(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+
+  const effectiveUser = user
+    ? {
+        firstName: user.firstName || user.username || "there",
+        fullName: user.fullName || user.username || "User",
+        email: user.primaryEmailAddress?.emailAddress || "",
+      }
+    : localUser
+    ? {
+        firstName: localUser.name.trim().split(" ")[0] || localUser.name,
+        fullName: localUser.name,
+        email: localUser.email,
+      }
+    : null;
+
+  const firstName = effectiveUser?.firstName || "Guest";
+  const fullName = effectiveUser?.fullName || "Guest User";
+  const userEmail = effectiveUser?.email || "guest@example.com";
   const greeting = getGreeting();
   const formattedDate = getFormattedDate();
+
+  function handleLocalAuth(e: React.FormEvent) {
+    e.preventDefault();
+    const nameToUse = authName.trim() || authEmail.split("@")[0] || "User";
+    const newUser = { name: nameToUse, email: authEmail.trim() || "user@example.com" };
+    setLocalUser(newUser);
+    localStorage.setItem("pathwise_local_user", JSON.stringify(newUser));
+    setShowAuthModal(false);
+    setAuthName("");
+    setAuthEmail("");
+    setAuthPassword("");
+    notify(authMode === "signup" ? `Account created! Welcome, ${nameToUse}.` : `Signed in as ${nameToUse}.`);
+  }
+
+  function handleSignOut() {
+    setLocalUser(null);
+    localStorage.removeItem("pathwise_local_user");
+    setShowProfile(false);
+    notify("Signed out successfully.");
+  }
 
   const [activeNav, setActiveNav] = useState<WorkspaceName>("Overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -231,20 +280,23 @@ export default function DashboardClient() {
           <button className="sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close sidebar"><X size={20} /></button>
         </div>
 
-        <Show when="signed-in">
-          <div className="profile-mini" style={{ cursor: "default" }}>
-            <UserButton showName />
+        {effectiveUser ? (
+          <div className="profile-mini" style={{ cursor: "pointer" }} onClick={() => setShowProfile(!showProfile)}>
+            <div className="brand-mark" style={{ background: "var(--purple)", borderRadius: "50%", width: "32px", height: "32px", fontSize: "14px", fontWeight: 700 }}>
+              {firstName[0].toUpperCase()}
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <strong style={{ display: "block", fontSize: "12px", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{fullName}</strong>
+              <span style={{ fontSize: "10px", color: "var(--muted)" }}>{userEmail}</span>
+            </div>
           </div>
-        </Show>
-        <Show when="signed-out">
+        ) : (
           <div className="profile-mini" style={{ padding: "0.5rem" }}>
-            <SignInButton mode="modal">
-              <button className="premium-action" style={{ width: "100%", justifyContent: "center" }}>
-                Sign in to Pathwise
-              </button>
-            </SignInButton>
+            <button className="premium-action" style={{ width: "100%", justifyContent: "center" }} onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}>
+              Sign in to Pathwise
+            </button>
           </div>
-        </Show>
+        )}
 
         <nav className="main-nav" aria-label="Main navigation">
           <p>Workspace</p>
@@ -276,17 +328,20 @@ export default function DashboardClient() {
             <button className="icon-button" aria-label="Notifications" onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}>
               <Bell size={18} /><span className="notification-dot" />
             </button>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="theme-button" style={{ fontWeight: 600, cursor: "pointer" }}>Sign in</button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="premium-action" style={{ fontWeight: 600, cursor: "pointer" }}>Sign up</button>
-              </SignUpButton>
-            </Show>
-            <Show when="signed-in">
-              <UserButton showName appearance={{ elements: { userButtonBox: { flexDirection: "row-reverse", gap: "8px" } } }} />
-            </Show>
+
+            {effectiveUser ? (
+              <button className="theme-button" style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontWeight: 600 }} onClick={() => setShowProfile(!showProfile)}>
+                <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--purple)", color: "#fff", display: "grid", placeItems: "center", fontSize: "11px", fontWeight: 700 }}>
+                  {firstName[0].toUpperCase()}
+                </div>
+                <span>{firstName}</span>
+              </button>
+            ) : (
+              <>
+                <button className="theme-button" style={{ fontWeight: 600, cursor: "pointer" }} onClick={() => { setAuthMode("signin"); setShowAuthModal(true); }}>Sign in</button>
+                <button className="premium-action" style={{ fontWeight: 600, cursor: "pointer" }} onClick={() => { setAuthMode("signup"); setShowAuthModal(true); }}>Sign up</button>
+              </>
+            )}
           </div>
           {showNotifications ? (
             <div className="popover notifications-popover">
@@ -302,6 +357,7 @@ export default function DashboardClient() {
               <strong>{fullName}</strong><span>{userEmail}</span>
               <button onClick={() => { setShowProfile(false); changeNav("Settings"); }}><UserRound size={16} /> View profile</button>
               <button onClick={() => { setShowProfile(false); changeNav("Settings"); }}><Settings size={16} /> Preferences</button>
+              <button style={{ color: "#d9534f" }} onClick={handleSignOut}><X size={16} /> Sign out</button>
             </div>
           ) : null}
         </header>
@@ -438,6 +494,92 @@ export default function DashboardClient() {
             <h3>Why you&apos;re a great fit</h3>
             <ul><li><Check size={15} />Your Figma and prototyping experience matches the role.</li><li><Check size={15} />Your preferred work location is a match.</li><li><Check size={15} />Your latest resume meets the core ATS criteria.</li></ul>
             <div className="modal-actions"><button className="secondary-button" onClick={() => toggleSave(selectedJob.id)}><Bookmark size={16} fill={saved.includes(selectedJob.id) ? "currentColor" : "none"} />{saved.includes(selectedJob.id) ? "Saved" : "Save"}</button><button className="primary-button" onClick={() => { notify("Application started — resume auto-fill is ready"); setSelectedJob(null); }}>Quick apply <ArrowRight size={16} /></button></div>
+          </section>
+        </div>
+      ) : null}
+
+      {showAuthModal ? (
+        <div className="modal-layer" role="dialog" aria-modal="true" aria-label="Authentication">
+          <button className="modal-scrim" aria-label="Close authentication" onClick={() => setShowAuthModal(false)} />
+          <section className="job-modal" style={{ maxWidth: "420px", textAlign: "left" }}>
+            <button className="modal-close" onClick={() => setShowAuthModal(false)}><X size={20} /></button>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+              <div className="brand-mark"><Sparkles size={18} fill="currentColor" /></div>
+              <h2 style={{ margin: 0, fontSize: "18px" }}>Pathwise</h2>
+            </div>
+            <p style={{ margin: "0 0 16px 0", color: "#858b97", fontSize: "12px" }}>
+              {authMode === "signup" ? "Create your free Pathwise account to unlock custom job alerts & applications." : "Sign in to access your saved jobs, applications, and resume health."}
+            </p>
+
+            <div style={{ display: "flex", gap: "6px", background: "#f1f2f5", padding: "4px", borderRadius: "8px", marginBottom: "16px" }}>
+              <button
+                type="button"
+                onClick={() => setAuthMode("signin")}
+                style={{ flex: 1, padding: "6px", border: 0, borderRadius: "6px", fontSize: "12px", fontWeight: 600, background: authMode === "signin" ? "#fff" : "transparent", color: authMode === "signin" ? "#111" : "#666", cursor: "pointer" }}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode("signup")}
+                style={{ flex: 1, padding: "6px", border: 0, borderRadius: "6px", fontSize: "12px", fontWeight: 600, background: authMode === "signup" ? "#fff" : "transparent", color: authMode === "signup" ? "#111" : "#666", cursor: "pointer" }}
+              >
+                Create account
+              </button>
+            </div>
+
+            <form onSubmit={handleLocalAuth} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {authMode === "signup" ? (
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#444b59", marginBottom: "4px" }}>
+                    Full Name *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Jalla Venkata"
+                    value={authName}
+                    onChange={(e) => setAuthName(e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #dcdfe6", fontSize: "13px", outline: "none" }}
+                  />
+                </div>
+              ) : null}
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#444b59", marginBottom: "4px" }}>
+                  Email Address *
+                </label>
+                <input
+                  required
+                  type="email"
+                  placeholder="name@example.com"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #dcdfe6", fontSize: "13px", outline: "none" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "#444b59", marginBottom: "4px" }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #dcdfe6", fontSize: "13px", outline: "none" }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="primary-button"
+                style={{ width: "100%", padding: "10px", marginTop: "8px", justifyContent: "center", fontSize: "13px" }}
+              >
+                {authMode === "signup" ? "Create account" : "Sign in"}
+              </button>
+            </form>
           </section>
         </div>
       ) : null}
