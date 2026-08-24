@@ -8,14 +8,23 @@ export const metadata: Metadata = {
   description: "Discover opportunities, improve your resume, and manage your career journey with Pathwise AI.",
 };
 
+function AuthProvider({ children }: { children: ReactNode }) {
+  // Only wrap with ClerkProvider when the publishable key is available
+  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    return <ClerkProvider>{children}</ClerkProvider>;
+  }
+  return <>{children}</>;
+}
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <ClerkProvider>
+        <AuthProvider>
           {children}
-        </ClerkProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+
